@@ -16,20 +16,22 @@ from keras import constraints
 from keras import losses 
 from keras import optimizers 
 from keras import metrics 
+from save_train_data import data_saver
 
 def prep_dataset():
 
-    data_dir = "/home/bdroix/bdroix/aesthetics_analysis/dane do analizy/dane"
+    data_dir = "/home/bdroix/bdroix/aesthetics_analysis/dane do analizy/dane_scaled_300_432"
     # number of all images in dataset
     num_of_images = process_directory(data_dir)
     print("NUM OF IMAGES")
     print(num_of_images)
     # number of samples used in every training episode
     # batch_size = int(num_of_images/15)
+    epochs = 1
     batch_size = 32
     print("BATCH SIZE")
     print(batch_size)
-    image_size = (90, 63)
+    image_size = (300, 432)
     
     aesthetic = list(os.listdir(data_dir+'/aesthetic'))
     nonaesthetic = list(os.listdir(data_dir+'/nonaesthetic'))
@@ -67,9 +69,13 @@ def prep_dataset():
     train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
     val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
     
-    model = build_model([image_size[0], image_size[1]])
+    model = build_model([image_size[0], image_size[1]])[0]
+    opt = build_model([image_size[0], image_size[1]])[1]
+    loss_fn = build_model([image_size[0], image_size[1]])[2]
+    metrics = build_model([image_size[0], image_size[1]])[3]
+
     model.summary()
-    model.fit(train_ds, batch_size = batch_size, validation_data = val_ds, epochs=12)
+    model.fit(train_ds, batch_size = batch_size, validation_data = val_ds, epochs=epochs)
 
     loss, accuracy = model.evaluate(val_ds, verbose=1) 
     print("LOSS")
@@ -77,6 +83,10 @@ def prep_dataset():
     print("ACCURACY")
     print(accuracy)
     
+    model.summary()
+
+    training_saver = data_saver()
+    training_saver.save_data("model_params", [opt, loss_fn, metrics, epochs, batch_size])
 
 def build_model(input_dimensions):
     # model = Sequential([
@@ -115,23 +125,29 @@ def build_model(input_dimensions):
     # ADA dla danych ktorych czesc cech ma niewielka reprezentacje w danej
     # a jednoczesnie maja cechy ktorych jest duzo w danej (Dense, Sparse)
     opt_sgd = optimizers.SGD(lr=learning_rate)
+    opt = "adam"
+
+    # loss functions
+    loss_fn = "binary_crossentropy"
+
+    # metrics
+    metrics = 'accuracy'
 
     # layers definition
     # input_layer = Dense(32, input_shape=(input_dimensions[0], input_dimensions[1], 3, ), 
-    
-
     # kernel_initializer = ones_init, kernel_regularizer = l1_regularizer, 
     # kernel_constraint = 'MaxNorm', activation = 'relu')
     base = input_dimensions[0] * input_dimensions[1] * 3
 
     input_layer = Flatten(input_shape=(input_dimensions[0], input_dimensions[1], 3))
-    hidden_layer_1 = Dense(256,  activation = 'sigmoid')
-    hidden_layer_2 = Dense(64,  activation = 'sigmoid')
-    hidden_layer_3 = Dense(16,  activation = 'relu')
-    hidden_layer_4 = Dense(8,  activation = 'relu')
-    hidden_layer_5 = Dense(2,  activation = 'sigmoid')
-    hidden_layer_6 = Dense(1024,  activation = 'sigmoid')
-    output_layer = Dense(1, activation = 'relu')
+    hidden_layer_1 = Dense(512,  activation = 'relu')
+    hidden_layer_2 = Dense(256,  activation = 'relu')
+    hidden_layer_3 = Dense(64,  activation = 'relu')
+    hidden_layer_4 = Dense(16,  activation = 'relu')
+    hidden_layer_5 = Dense(8,  activation = 'relu')
+    hidden_layer_6 = Dense(2,  activation = 'relu')
+    # output_layer = Dense(1, activation = 'sigmoid')
+    output_layer = Dense(1, activation = 'softmax')
     
     # model definition
     model = Sequential()
@@ -139,12 +155,12 @@ def build_model(input_dimensions):
     # model.add(Dropout(0.05)) 
     # model.add(hidden_layer) 
     # model.add(Dropout(0.05)) 
-    model.add(hidden_layer_6)
     model.add(hidden_layer_1)
     model.add(hidden_layer_2)
     model.add(hidden_layer_3)
     model.add(hidden_layer_4)
     model.add(hidden_layer_5)
+    model.add(hidden_layer_6)
 
     # model.add(Dropout(0.05)) 
     model.add(output_layer)
@@ -152,19 +168,31 @@ def build_model(input_dimensions):
     # model compilation
     
     model.compile(
-        optimizer="adam",
-        loss = 'mean_squared_error',
+        optimizer=opt,
+        # optimizer = opt_sgd,
+        # loss = 'mean_squared_error',
+        loss = loss_fn,
         # loss = "categorical_crossentropy",
-        metrics = [metrics.accuracy],
+        metrics = metrics,
         # loss_weights = None,
         # sample_weight_mode = None,
         # weighted_metrics = None,
         # target_tensors = None
     )
+
+    training_saver = data_saver()
+    
+    training_saver.save_data("act_fun_params", [hidden_layer_1.get_config()['activation']
+    , hidden_layer_2.get_config()['activation'], hidden_layer_3.get_config()['activation'], hidden_layer_4.get_config()['activation'], 
+    hidden_layer_5.get_config()['activation'], hidden_layer_6.get_config()['activation'], output_layer.get_config()['activation']])
+
+    training_saver.save_data("layers_params", [hidden_layer_1.get_config()['units']
+    , hidden_layer_2.get_config()['units'], hidden_layer_3.get_config()['units'], hidden_layer_4.get_config()['units'], 
+    hidden_layer_5.get_config()['units'], hidden_layer_6.get_config()['units'], output_layer.get_config()['units']])
     
     # model training  
 
-    return model
+    return (model, opt, loss_fn, metrics)
 
 def save_model(model, filename="/Users/maciekswiech/Desktop/Praca/B-Droix/Analiza Estetyki CV/models/nn_model.h5"):
     model.save(filename)

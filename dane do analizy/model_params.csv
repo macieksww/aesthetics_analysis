@@ -1,0 +1,2 @@
+id,optimizer,loss,metrics,epochs,batch_size
+0,adam,binary_crossentropy,accuracy,1,32

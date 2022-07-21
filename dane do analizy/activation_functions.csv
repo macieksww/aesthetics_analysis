@@ -1,0 +1,5 @@
+id,IL,H1,H2,H3,H4,H5,H6,OL
+0,relu,relu,relu,relu,relu,relu,softmax
+1,relu,relu,relu,relu,relu,relu,softmax
+2,relu,relu,relu,relu,relu,relu,softmax
+3,relu,relu,relu,relu,relu,relu,softmax
