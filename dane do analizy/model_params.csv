@@ -1,2 +1,15 @@
 id,optimizer,loss,metrics,epochs,batch_size
-0,adam,binary_crossentropy,accuracy,1,32
+0,adam,binary_crossentropy,accuracy,1,32,0.6931944489479065,0.5063291192054749
+1,adam,binary_crossentropy,accuracy,1,32,1535.79541015625,0.5063291192054749
+2,adam,binary_crossentropy,accuracy,1,32,12318.6123046875,0.5063291192054749
+3,adam,binary_crossentropy,accuracy,1,32,0.6931710839271545,0.5063291192054749
+4,adam,binary_crossentropy,accuracy,1,32,0.69,0.51
+5,adam,binary_crossentropy,accuracy,1,32,0.6932,0.5079
+6,adam,binary_crossentropy,accuracy,10,32,0.6918,0.5079
+7,adam,binary_crossentropy,accuracy,10,32,0.6920,0.5079
+8,adam,binary_crossentropy,accuracy,10,32,0.6886,0.5079
+9,adam,binary_crossentropy,accuracy,10,32,0.6447,0.6372
+10,adam,binary_crossentropy,accuracy,25,32,0.7326,0.5079
+11,adam,binary_crossentropy,accuracy,25,32,1.9115,0.5079
+12,adam,binary_crossentropy,accuracy,25,32,7.9377,0.6709
+13,adam,binary_crossentropy,accuracy,15,32,0.6568,0.6076

@@ -27,7 +27,7 @@ def prep_dataset():
     print(num_of_images)
     # number of samples used in every training episode
     # batch_size = int(num_of_images/15)
-    epochs = 1
+    epochs = 25
     batch_size = 32
     print("BATCH SIZE")
     print(batch_size)
@@ -52,19 +52,28 @@ def prep_dataset():
         image_size=(image_size[0], image_size[1]),
         batch_size=batch_size)
     
-    normalization_layer = tf.keras.layers.Rescaling(1./255)
-    normalized_ds = train_ds.map(lambda x, y: (normalization_layer(x), y))
-    image_batch, labels_batch = next(iter(normalized_ds))
-    first_image = image_batch[0]
     class_names = train_ds.class_names
     print("DATA CLASSES:")
     print(class_names)
+
+    normalization_layer = tf.keras.layers.Rescaling(1./255)
+    normalized_train_ds = train_ds.map(lambda x, y: (normalization_layer(x), y))
+    train_ds = normalized_train_ds
+    normalized_val_ds = train_ds.map(lambda x, y: (normalization_layer(x), y))
+    val_ds = normalized_val_ds
+    image_batch, labels_batch = next(iter(normalized_train_ds))
+    first_image = image_batch[0]
     
     # prefetch and caching for better dataset performace
     # caching keeps images in caceh after they are loaded
     # from disk during first epoch
     # prefetch overlaps data preprocessing and model execution
-    
+
+    # print("TRAIN DATASET ELEMENTS")
+    # for element in train_ds.as_numpy_iterator(): 
+    #     print(element[0])
+    #     print(type(element[0]))
+
     AUTOTUNE = tf.data.AUTOTUNE
     train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
     val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
@@ -78,22 +87,25 @@ def prep_dataset():
     model.fit(train_ds, batch_size = batch_size, validation_data = val_ds, epochs=epochs)
 
     loss, accuracy = model.evaluate(val_ds, verbose=1) 
+    loss = "{:.4f}".format(loss)
+    accuracy = "{:.4f}".format(accuracy)
     print("LOSS")
     print(loss)
     print("ACCURACY")
     print(accuracy)
     
-    model.summary()
-
     training_saver = data_saver()
-    training_saver.save_data("model_params", [opt, loss_fn, metrics, epochs, batch_size])
+    training_saver.save_data("model_params", [opt, loss_fn, metrics, epochs, batch_size, loss, accuracy])
+
+    training_saver.save_data("act_fun_params", [model.layers[1].get_config()['activation']
+    , model.layers[2].get_config()['activation'], model.layers[3].get_config()['activation'], model.layers[4].get_config()['activation'], 
+    model.layers[5].get_config()['activation'], model.layers[6].get_config()['activation'], model.layers[7].get_config()['activation'], loss, accuracy])
+
+    training_saver.save_data("layers_params", [model.layers[1].get_config()['units']
+    , model.layers[2].get_config()['units'], model.layers[3].get_config()['units'], model.layers[4].get_config()['units'], 
+    model.layers[5].get_config()['units'], model.layers[6].get_config()['units'], model.layers[7].get_config()['units'], loss, accuracy])
 
 def build_model(input_dimensions):
-    # model = Sequential([
-    # keras.layers.Flatten(input_shape=(image_size[0], image_size[1])) # input layer
-    # keras.layers.Dense(128, activation='relu') # hidden layer
-    # keras.layers.Dense(2, activation='softmax') # output layer (2 nodes - 2 classes)
-    # ])
     
     # weights initializers
     zeros_init = initializers.Zeros() 
@@ -126,9 +138,11 @@ def build_model(input_dimensions):
     # a jednoczesnie maja cechy ktorych jest duzo w danej (Dense, Sparse)
     opt_sgd = optimizers.SGD(lr=learning_rate)
     opt = "adam"
+    # opt = "sgd"
 
     # loss functions
     loss_fn = "binary_crossentropy"
+    # loss_fn = "mean_squared_error"
 
     # metrics
     metrics = 'accuracy'
@@ -140,24 +154,31 @@ def build_model(input_dimensions):
     base = input_dimensions[0] * input_dimensions[1] * 3
 
     input_layer = Flatten(input_shape=(input_dimensions[0], input_dimensions[1], 3))
-    hidden_layer_1 = Dense(512,  activation = 'relu')
-    hidden_layer_2 = Dense(256,  activation = 'relu')
-    hidden_layer_3 = Dense(64,  activation = 'relu')
-    hidden_layer_4 = Dense(16,  activation = 'relu')
-    hidden_layer_5 = Dense(8,  activation = 'relu')
-    hidden_layer_6 = Dense(2,  activation = 'relu')
-    # output_layer = Dense(1, activation = 'sigmoid')
-    output_layer = Dense(1, activation = 'softmax')
+    # hidden_layer_1 = Dense(512,  activation = 'relu')
+    # hidden_layer_2 = Dense(256,  activation = 'relu')
+    # hidden_layer_3 = Dense(64,  activation = 'relu')
+    # hidden_layer_4 = Dense(16,  activation = 'relu')
+    # hidden_layer_5 = Dense(8,  activation = 'relu')
+    # hidden_layer_6 = Dense(2,  activation = 'relu')
+    hidden_layer_1 = Dense(512,  activation = 'linear', kernel_regularizer=l1_regularizer)
+    hidden_layer_2 = Dense(256,  activation = 'relu', kernel_regularizer=l1_regularizer)
+    hidden_layer_3 = Dense(64,  activation = 'linear', kernel_regularizer=l1_regularizer)
+    hidden_layer_4 = Dense(16,  activation = 'relu', kernel_regularizer=l1_regularizer)
+    hidden_layer_5 = Dense(8,  activation = 'linear', kernel_regularizer=l1_regularizer)
+    hidden_layer_6 = Dense(2,  activation = 'relu', kernel_regularizer=l1_regularizer)
+    output_layer = Dense(1, activation = 'sigmoid')
+    # output_layer = Dense(1, activation = 'softmax')
     
     # model definition
     model = Sequential()
     model.add(input_layer)
     # model.add(Dropout(0.05)) 
-    # model.add(hidden_layer) 
-    # model.add(Dropout(0.05)) 
     model.add(hidden_layer_1)
+    model.add(Dropout(0.05)) 
     model.add(hidden_layer_2)
+    model.add(Dropout(0.05)) 
     model.add(hidden_layer_3)
+    model.add(Dropout(0.05)) 
     model.add(hidden_layer_4)
     model.add(hidden_layer_5)
     model.add(hidden_layer_6)
@@ -179,19 +200,7 @@ def build_model(input_dimensions):
         # weighted_metrics = None,
         # target_tensors = None
     )
-
-    training_saver = data_saver()
     
-    training_saver.save_data("act_fun_params", [hidden_layer_1.get_config()['activation']
-    , hidden_layer_2.get_config()['activation'], hidden_layer_3.get_config()['activation'], hidden_layer_4.get_config()['activation'], 
-    hidden_layer_5.get_config()['activation'], hidden_layer_6.get_config()['activation'], output_layer.get_config()['activation']])
-
-    training_saver.save_data("layers_params", [hidden_layer_1.get_config()['units']
-    , hidden_layer_2.get_config()['units'], hidden_layer_3.get_config()['units'], hidden_layer_4.get_config()['units'], 
-    hidden_layer_5.get_config()['units'], hidden_layer_6.get_config()['units'], output_layer.get_config()['units']])
-    
-    # model training  
-
     return (model, opt, loss_fn, metrics)
 
 def save_model(model, filename="/Users/maciekswiech/Desktop/Praca/B-Droix/Analiza Estetyki CV/models/nn_model.h5"):

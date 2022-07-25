@@ -3,3 +3,13 @@ id,IL,H1,H2,H3,H4,H5,H6,OL
 1,relu,relu,relu,relu,relu,relu,softmax
 2,relu,relu,relu,relu,relu,relu,softmax
 3,relu,relu,relu,relu,relu,relu,softmax
+4,relu,relu,relu,relu,relu,relu,softmax
+5,relu,relu,relu,relu,relu,relu,softmax
+6,relu,relu,relu,relu,relu,relu,softmax
+7,relu,relu,relu,relu,relu,relu,softmax
+8,relu,relu,relu,relu,relu,relu,softmax,12318.6123046875,0.5063291192054749
+9,relu,relu,relu,relu,relu,relu,softmax,0.6931710839271545,0.5063291192054749
+10,relu,relu,relu,relu,relu,relu,softmax,0.69,0.51
+11,relu,relu,relu,relu,relu,relu,softmax,0.6932,0.5079
+12,linear,linear,linear,linear,linear,linear,sigmoid,0.6918,0.5079
+13,linear,linear,linear,linear,linear,linear,sigmoid,0.6920,0.5079

@@ -48,19 +48,4 @@ class data_saver:
                 writer = csv.writer(f)
                 writer.writerow(data)
 
-
-    # def prepare_data(self, data_type, data):
-    #     if data_type=="model_params":
-    #         fieldnames=self.model_params_fieldnames
-        
-    #     elif data_type=="act_fun_params":
-    #         fieldnames=self.act_fun_fieldnames
-
-    #     else:
-    #         fieldnames=self.layers_neurons_fieldnames
-        
-        # data_dict={}
-
-        # for fieldname in fieldnames:
-
 a = data_saver()
