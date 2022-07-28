@@ -22,3 +22,14 @@ id,optimizer,loss,metrics,epochs,batch_size
 20,adam,binary_crossentropy,accuracy,2,32,0.6897,0.5063
 21,adam,binary_crossentropy,accuracy,2,32,0.6846,0.5063
 22,adam,binary_crossentropy,accuracy,20,32,0.8814,0.7089
+23,adagrad,binary_crossentropy,accuracy,2,32,0.6911,0.5570
+24,adagrad,binary_crossentropy,accuracy,2,32,0.6965,0.3924
+25,adagrad,binary_crossentropy,accuracy,2,32,0.6936,0.5063
+26,adagrad,binary_crossentropy,accuracy,2,32,0.6934,0.5190
+27,adagrad,binary_crossentropy,accuracy,2,32,0.6937,0.5063
+28,adagrad,binary_crossentropy,accuracy,1,32,0.6934,0.4810
+29,adagrad,binary_crossentropy,accuracy,1,32,0.6930,0.4937
+30,adagrad,binary_crossentropy,accuracy,1,32,0.6938,0.5063
+31,adagrad,binary_crossentropy,accuracy,1,32,0.6950,0.5063
+32,adagrad,binary_crossentropy,accuracy,1,32,0.6949,0.5063
+33,adagrad,binary_crossentropy,accuracy,1,32,0.6931,0.4937
