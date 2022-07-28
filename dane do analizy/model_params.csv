@@ -13,3 +13,12 @@ id,optimizer,loss,metrics,epochs,batch_size
 11,adam,binary_crossentropy,accuracy,25,32,1.9115,0.5079
 12,adam,binary_crossentropy,accuracy,25,32,7.9377,0.6709
 13,adam,binary_crossentropy,accuracy,15,32,0.6568,0.6076
+14,adam,binary_crossentropy,accuracy,15,32,0.8023,0.7089
+15,adam,binary_crossentropy,accuracy,15,32,0.8688,0.7089
+16,adagrad,binary_crossentropy,accuracy,15,32,0.6905,0.6329
+17,adam,binary_crossentropy,accuracy,1,32,0.6918,0.5063
+18,adam,binary_crossentropy,accuracy,1,32,0.6918,0.5063
+19,adam,binary_crossentropy,accuracy,2,32,0.6891,0.5063
+20,adam,binary_crossentropy,accuracy,2,32,0.6897,0.5063
+21,adam,binary_crossentropy,accuracy,2,32,0.6846,0.5063
+22,adam,binary_crossentropy,accuracy,20,32,0.8814,0.7089

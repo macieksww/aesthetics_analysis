@@ -16,6 +16,7 @@ from keras import constraints
 from keras import losses 
 from keras import optimizers 
 from keras import metrics 
+from keras.callbacks import CSVLogger
 from save_train_data import data_saver
 
 def prep_dataset():
@@ -27,8 +28,9 @@ def prep_dataset():
     print(num_of_images)
     # number of samples used in every training episode
     # batch_size = int(num_of_images/15)
-    epochs = 15
+    epochs = 50
     batch_size = 32
+    load_model = False
     print("BATCH SIZE")
     print(batch_size)
     image_size = (300, 432)
@@ -78,13 +80,18 @@ def prep_dataset():
     train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
     val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
     
-    model = build_model([image_size[0], image_size[1]])[0]
+    if load_model is False:
+        model = build_model([image_size[0], image_size[1]])[0]
+    else:
+        model = load_model('model.h5')
+
     opt = build_model([image_size[0], image_size[1]])[1]
     loss_fn = build_model([image_size[0], image_size[1]])[2]
     metrics = build_model([image_size[0], image_size[1]])[3]
 
+    csv_logger = CSVLogger("/home/bdroix/bdroix/aesthetics_analysis/model_history_log_adagrad_32.csv", append=False)
     model.summary()
-    model.fit(train_ds, batch_size = batch_size, validation_data = val_ds, epochs=epochs)
+    model.fit(train_ds, batch_size = batch_size, validation_data = val_ds, epochs=epochs, callbacks=[csv_logger])
 
     loss, accuracy = model.evaluate(val_ds, verbose=1) 
     loss = "{:.4f}".format(loss)
@@ -97,13 +104,24 @@ def prep_dataset():
     training_saver = data_saver()
     training_saver.save_data("model_params", [opt, loss_fn, metrics, epochs, batch_size, loss, accuracy])
 
-    training_saver.save_data("act_fun_params", [model.layers[1].get_config()['activation']
-    , model.layers[2].get_config()['activation'], model.layers[3].get_config()['activation'], model.layers[4].get_config()['activation'], 
-    model.layers[5].get_config()['activation'], model.layers[6].get_config()['activation'], model.layers[7].get_config()['activation'], loss, accuracy])
+    print(model.layers[1].get_config())
 
-    training_saver.save_data("layers_params", [model.layers[1].get_config()['units']
-    , model.layers[2].get_config()['units'], model.layers[3].get_config()['units'], model.layers[4].get_config()['units'], 
-    model.layers[5].get_config()['units'], model.layers[6].get_config()['units'], model.layers[7].get_config()['units'], loss, accuracy])
+    act_fun_list = []
+    for layer in model.layers:
+        if "activation" in layer.get_config().keys():
+            act_fun_list.append(layer.get_config()['activation'])
+        else:
+            act_fun_list.append("---")
+
+    units_list = []
+    for layer in model.layers:
+        if "units" in layer.get_config().keys():
+            units_list.append(layer.get_config()['units'])
+        else:
+            units_list.append("---")
+
+    # training_saver.save_data("act_fun_params", [act_fun_list, loss, accuracy])
+    # training_saver.save_data("layers_params", [units_list, loss, accuracy])
 
 def build_model(input_dimensions):
     
@@ -129,7 +147,7 @@ def build_model(input_dimensions):
     l2_regularizer = regularizers.L2(0.01)
 
     # optimizers
-    learning_rate = 0.5
+    learning_rate = 0.01
     # SGD - high variance - fluctuations of obj. func. values
     # good to decrease learning rate during learning process to avoid oscillations
 
@@ -137,8 +155,9 @@ def build_model(input_dimensions):
     # ADA dla danych ktorych czesc cech ma niewielka reprezentacje w danej
     # a jednoczesnie maja cechy ktorych jest duzo w danej (Dense, Sparse)
     opt_sgd = optimizers.SGD(lr=learning_rate)
-    opt = "adam"
+    opt = "adagrad"
     # opt = "sgd"
+    # opt = "adam"
 
     # loss functions
     loss_fn = "binary_crossentropy"
@@ -159,10 +178,10 @@ def build_model(input_dimensions):
     # conv_layer_5 = Conv2D(32, kernel_size=3, activation='relu')
 
     conv_layer_1 = Conv2D(64, kernel_size=3, activation='relu', input_shape=(300,432,3))
-    conv_layer_2 = Conv2D(32, kernel_size=3, activation='relu')
-    conv_layer_3 = Conv2D(32, kernel_size=3, activation='relu')
-    conv_layer_4 = Conv2D(32, kernel_size=3, activation='relu')
-    conv_layer_5 = Conv2D(32, kernel_size=3, activation='relu')
+    conv_layer_2 = Conv2D(64, kernel_size=3, activation='relu')
+    conv_layer_3 = Conv2D(64, kernel_size=3, activation='relu')
+    conv_layer_4 = Conv2D(64, kernel_size=3, activation='relu')
+    conv_layer_5 = Conv2D(64, kernel_size=3, activation='relu')
 
     after_conv_layer = Flatten()
 
@@ -181,22 +200,22 @@ def build_model(input_dimensions):
     model = Sequential()
     model.add(conv_layer_1)
     model.add(max_pool_2d)
-    model.add(Dropout(0.05)) 
+    # model.add(Dropout(0.05)) 
     model.add(conv_layer_2)
     model.add(max_pool_2d)
-    model.add(Dropout(0.05)) 
+    # model.add(Dropout(0.05)) 
     model.add(conv_layer_3)
     model.add(max_pool_2d)
-    model.add(Dropout(0.05)) 
+    # model.add(Dropout(0.05)) 
     model.add(conv_layer_4)
     model.add(max_pool_2d)
-    model.add(Dropout(0.05)) 
+    # model.add(Dropout(0.05)) 
     model.add(conv_layer_5)
     model.add(max_pool_2d)
-    model.add(Dropout(0.05)) 
-    model.add(conv_layer_5)
+    # model.add(Dropout(0.05)) 
+    # model.add(conv_layer_5)
     # model.add(max_pool_2d)
-    model.add(conv_layer_5)
+    # model.add(conv_layer_5)
     # model.add(max_pool_2d)
     model.add(after_conv_layer)
     # model.add(hidden_layer_3)
