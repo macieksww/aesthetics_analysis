@@ -33,3 +33,4 @@ id,optimizer,loss,metrics,epochs,batch_size
 31,adagrad,binary_crossentropy,accuracy,1,32,0.6950,0.5063
 32,adagrad,binary_crossentropy,accuracy,1,32,0.6949,0.5063
 33,adagrad,binary_crossentropy,accuracy,1,32,0.6931,0.4937
+34,adam,binary_crossentropy,accuracy,1,32,0.6981,0.5063

@@ -17,20 +17,22 @@ from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.preprocessing.image import img_to_array
 from save_train_data import data_saver
 from data_augmentation import data_augmentation
-from build_model import build_model
+from build_efficientnet_model import build_model
 from training_summary import save_model, model_inputs, model_layers, model_outputs, model_get_weights, plot_images, training_summary
+from tensorflow.python.client import device_lib
+print(device_lib.list_local_devices())
 
-epochs = 50
+epochs = 15
 batch_size = 32
 load_model = False
 early_stopping = False
 print("BATCH SIZE")
 print(batch_size)
 image_size = (300, 432)
+efficientnet_density = 4
 data_dir = "/home/bdroix/bdroix/aesthetics_analysis/dane do analizy/dane_scaled_300_432/"
 aesthetic_dir = "/home/bdroix/bdroix/aesthetics_analysis/dane do analizy/dane_scaled_300_432/aesthetic/"
 nonaesthetic_dir = "/home/bdroix/bdroix/aesthetics_analysis/dane do analizy/dane_scaled_300_432/nonaesthetic/"
-
 
 def train():
     global epochs
@@ -41,6 +43,7 @@ def train():
     global data_dir
     global aesthetic_dir
     global nonaesthetic_dir
+    global efficientnet_density
 
     # number of all images in dataset
     num_of_images = process_directory(data_dir)
@@ -116,13 +119,13 @@ def train():
     val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
     
     if load_model is False:
-        model = build_model([image_size[0], image_size[1]])[0]
+        model = build_model([image_size[0], image_size[1]], efficientnet_density)[0]
     else:
         model = load_model('model.h5')
 
-    opt = build_model([image_size[0], image_size[1]])[1]
-    loss_fn = build_model([image_size[0], image_size[1]])[2]
-    metrics = build_model([image_size[0], image_size[1]])[3]
+    opt = build_model([image_size[0], image_size[1]], efficientnet_density)[1]
+    loss_fn = build_model([image_size[0], image_size[1]], efficientnet_density)[2]
+    metrics = build_model([image_size[0], image_size[1]], efficientnet_density)[3]
 
     csv_logger = CSVLogger("/home/bdroix/bdroix/aesthetics_analysis/model_history_log_adagrad_32.csv", append=False)
     # model.summary()
